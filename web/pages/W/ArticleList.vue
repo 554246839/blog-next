@@ -2,36 +2,52 @@
   <div class="web-article-list">
     <ul class="web-article-nav">
       <li :class="{'article-active': category === 'all'}">
-        <nuxt-link to="/W/ArticleList">全部</nuxt-link>
+        <nuxt-link to="/w/articleList">全部</nuxt-link>
       </li>
-      <li :class="{'article-active': category === 'javascript'}">
-        <nuxt-link to="/W/ArticleList/javascript">JavaScript</nuxt-link>
+      <li
+        v-for="item in categoryList"
+        :key="item.value"
+        :class="{'article-active': category === item.value}">
+        <nuxt-link :to="`/w/articleList/${item.value}`">{{item.name}}</nuxt-link>
       </li>
-      <li :class="{'article-active': category === 'typescript'}">
-        <nuxt-link to="/W/ArticleList/typescript">TypeScript</nuxt-link>
-      </li>
-      <li :class="{'article-active': category === 'nodejs'}">
-        <nuxt-link to="/W/ArticleList/nodejs">NodeJs</nuxt-link>
-      </li>
-      <li :class="{'article-active': category === 'webpack'}">
-        <nuxt-link to="/W/ArticleList/webpack">Webpack</nuxt-link>
+      <li class="search">
+        <el-input size="mini" placeholder="请输入查找的标题" v-model="searchTxt" @click.enter="searchEvent">
+          <el-button slot="append" icon="el-icon-search" @click="searchEvent"></el-button>
+        </el-input>
       </li>
     </ul>
-    <nuxt-child></nuxt-child>
+    <nuxt-child ref="articleList" :searchTxt="searchTxt"></nuxt-child>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, SetupContext, computed } from '@vue/composition-api'
+import { defineComponent, PropType, SetupContext, computed, ComputedRef, Ref, ref } from '@vue/composition-api'
+import { getCategoryList } from './api'
 
 export default defineComponent({
-  setup(props: PropType<any>, context: SetupContext) {
-
-    // @ts-ignore
-    const category: ComputedRef<any> = computed(() => context.root.$route.params.category || 'all')
+  async asyncData(context: any) {
+    const categoryList = await getCategoryList(context.$http)
 
     return {
-      category
+      categoryList
+    }
+  },
+  setup(props: PropType<any>, context: SetupContext) {
+    const root: any = context.root
+    const refs: any = context.refs
+
+    const searchTxt: Ref = ref('')
+
+    const category: ComputedRef<any> = computed(() => root.$route.params.category || 'all')
+
+    function searchEvent() {
+      refs.articleList.requestData(1)
+    }
+
+    return {
+      category,
+      searchTxt,
+      searchEvent
     }
   }
 })
@@ -46,10 +62,15 @@ export default defineComponent({
     li {
       display: inline-block;
       font-size: 14px;
+      line-height: 28px;
       color: #333;
       &.article-active {
         color: #ff7700;
+        font-weight: bold;
       }
+    }
+    .search {
+      float: right;
     }
   }
 }

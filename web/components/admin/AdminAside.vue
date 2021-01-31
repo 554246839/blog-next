@@ -25,15 +25,19 @@ import BLOG from '../../types/index'
 
 const menuList: BLOG.ADMIN.MenuItemType[] = [
   {
-    path: '/A/ArticleList',
+    path: '/a/articleList',
     label: '文章列表',
     icon: 'el-icon-menu'
   }, {
-    path: '/A/Article/0',
+    path: '/a/article/0',
     label: '新增文章',
     icon: 'el-icon-edit'
   }, {
-    path: '/A/Visitor',
+    path: '/a/category',
+    label: '分类管理',
+    icon: 'el-icon-bangzhu'
+  }, {
+    path: '/a/visitor',
     label: '查看访客',
     icon: 'el-icon-s-custom'
   }
@@ -48,8 +52,8 @@ export default defineComponent({
       let index: string = context.root.$route.path
       let label: string = ''
 
-      if (index.startsWith('/A/Article') && index !== '/A/Article/0' && index !== '/A/ArticleList') {
-        index = '/A/ArticleList'
+      if (index.startsWith('/a/article') && index !== '/a/article/0' && index !== '/a/articleList') {
+        index = '/a/articleList'
         label = '文章编辑'
       } else {
         label = menuList.filter(item => item.path === index)[0].label

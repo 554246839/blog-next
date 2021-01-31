@@ -50,4 +50,9 @@ li {
 
 img {
   width: 100%;
+  height: inherit;
+}
+
+.markdown-body pre {
+  background-color: #282828 !important;
 }

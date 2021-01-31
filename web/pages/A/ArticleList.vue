@@ -2,7 +2,7 @@
   <div class="admin-article-list">
     <el-table
       ref="singleTable"
-      :data="articleData"
+      :data="data.list"
       highlight-current-row
       style="width: 100%">
 
@@ -10,7 +10,7 @@
 
       <el-table-column property="name" label="标题">
         <template slot-scope="scope">
-          <nuxt-link :to="`/W/ArticleDetail/${scope.row.id}`">{{scope.row.name}}</nuxt-link>
+          <nuxt-link :to="`/w/articleDetail/${scope.row._id}`">{{scope.row.title}}</nuxt-link>
         </template>
       </el-table-column>
 
@@ -30,7 +30,7 @@
 
       <el-table-column property="delete" label="操作" align="center" width="80">
         <template slot-scope="scope">
-          <el-button type="text" size="small" @click="deleteArticle(scope.row)">删除</el-button>
+          <el-button type="text" size="small" @click="deleteArticleEvent(scope.row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -38,40 +38,62 @@
     <el-pagination
       class="admin-pagination"
       layout="prev, pager, next, jumper, total"
-      :total="1000">
+      hide-on-single-page
+      :page-size="data.pageSize"
+      :total="data.total"
+      @current-change="requestData">
     </el-pagination>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, SetupContext } from '@vue/composition-api'
+import { defineComponent, PropType, SetupContext, ref, Ref } from '@vue/composition-api'
+import { getArticleList, deleteArticle } from './api'
 import BLOG from '../../types/index'
 
 export default defineComponent({
   setup(props: PropType<any>, content: SetupContext) {
+    const root: any = content.root
     
-    const articleData: BLOG.COMMON.ArticleListItem[] = [{
-      name: 'node 对于 formdata 数据解析处理 ',
-      abstract: '摘要',
-      category: 'nodejs',
-      isPublic: true,
-      readNums: 0,
-      id: '1234567890'
-    }]
+    let data: Ref = ref({})
+
+    async function requestData(pageNo: number = 1) {
+      const resData = await getArticleList(root.$http, {
+        params: {
+          pageSize: 10,
+          pageNo
+        }
+      })
+      data.value = resData
+    }
 
     function editArticle(row: BLOG.COMMON.ArticleListItem) {
-      // @ts-ignore
-      content.root.$router.push(`/A/Article/${row.id}`)
+      root.$router.push(`/a/article/${row._id}`)
     }
 
-    function deleteArticle(row: BLOG.COMMON.ArticleListItem) {
-
+    function deleteArticleEvent(row: BLOG.COMMON.ArticleListItem) {
+      root.$confirm('确认是否删除该文章?', '删除提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        deleteArticle(root.$http, {  _id: row._id }).then((res: any) => {
+          requestData(data.value.pageNo)
+          root.$message({
+            type: 'success',
+            message: '删除成功!'
+          })
+        })
+      })
     }
+
+    requestData()
 
     return {
-      articleData,
       editArticle,
-      deleteArticle
+      deleteArticleEvent,
+      requestData,
+      data
     }
   }
 })

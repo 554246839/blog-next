@@ -7,7 +7,7 @@ import { defineComponent } from '@vue/composition-api'
 
 export default defineComponent({
   asyncData(context) {
-    context.redirect('/A/ArticleList')
+    context.redirect('/a/articleList')
   }
 })
 </script>
